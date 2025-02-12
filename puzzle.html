@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <!-- Khai báo tài liệu HTML5 và ngôn ngữ tiếng Việt -->
+  <meta charset="UTF-8">
+  <!-- Thiết lập viewport để hiển thị tốt trên mọi thiết bị -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Puzzle - Ghép Ảnh Kỉ Yếu</title>
+  
+  <!-- Liên kết Bootstrap CSS để sử dụng các lớp có sẵn -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  
+  <!-- CSS tùy chỉnh cho trang puzzle -->
+  <style>
+    /* ===== CÁC ĐIỀU KIỆN CHUNG ===== */
+    body {
+      background: #f8f9fa; /* Màu nền nhẹ cho trang */
+      overflow-x: hidden;  /* Ẩn thanh cuộn ngang */
+    }
+    
+    /* ===== Thanh Navbar ===== */
+    .navbar-custom {
+      background: #343a40; /* Màu nền tối cho navbar */
+    }
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link {
+      color: #fff; /* Màu chữ trắng cho các mục trong navbar */
+    }
+    
+    /* ===== Bố cục chính ===== */
+    .container-fluid {
+      padding: 20px;
+    }
+    
+    /* ===== Sidebar bên trái chứa các nút điều khiển ===== */
+    #sidebar {
+      background: #ffffff;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      min-height: 600px;
+      padding: 15px;
+    }
+    
+    /* ===== Puzzle Board: khu vực chính để ghép mảnh ===== */
+    #puzzleBoard {
+      margin: auto;
+      width: 600px;
+      height: 600px;
+      background: #e9ecef;
+      border: 2px solid #343a40;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* ===== Thanh Slider chứa mảnh ghép (bây giờ ở bên phải, dọc) ===== */
+    #pieceSlider {
+        width: 250px; /* Tăng chiều rộng để hiển thị đầy đủ các piece */
+        height: 600px;
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        overflow-y: auto;
+        }
+
+    
+    /* ===== Các mảnh puzzle ===== */
+    .puzzle-piece {
+      border: 1px solid #fff;
+      cursor: move; /* Con trỏ chuột hiển thị khi di chuyển qua mảnh */
+      /* Đối với slider, ta sắp xếp theo block với khoảng cách dưới */
+      margin-bottom: 5px;
+    }
+    
+    /* ===== Các định dạng cho background slider (nếu có) ===== */
+    /* Các định dạng này vẫn dùng cho phần hero background slider ở trang index.html, không áp dụng ở puzzle */
+    
+  </style>
+</head>
+<body>
+  <!-- ===== Thanh Navbar ở đầu trang ===== -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+      <!-- Tên trang trên navbar -->
+      <a class="navbar-brand" href="index.html">Kỉ Yếu</a>
+      <!-- Nút hiển thị menu khi màn hình nhỏ -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <!-- Menu điều hướng -->
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <ul class="navbar-nav ml-auto">
+          <!-- Liên kết đến trang chủ -->
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Trang Chủ</a>
+          </li>
+          <!-- Liên kết đến trang danh sách thành viên -->
+          <li class="nav-item">
+            <a class="nav-link" href="members.html">Thành Viên</a>
+          </li>
+          <!-- Liên kết đến trang puzzle hiện tại -->
+          <li class="nav-item active">
+            <a class="nav-link" href="puzzle.html">Puzzle</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- ===== Layout chính của trang Puzzle ===== -->
+  <div class="container-fluid mt-4">
+    <div class="row">
+      <!-- Cột bên trái: chứa các nút điều khiển -->
+      <div class="col-md-2" id="sidebar">
+        <!-- Nút Pick One: chọn ngẫu nhiên một ảnh puzzle mới -->
+        <button id="pickOneBtn" class="btn btn-primary btn-block mb-3">Pick One</button>
+        <!-- Nút Help: ghép thêm một mảnh đúng -->
+        <button id="helpBtn" class="btn btn-info btn-block mb-3">Help</button>
+        <!-- Nút Retry: phá hết và ghép lại từ đầu bức ảnh hiện tại -->
+        <button id="retryBtn" class="btn btn-danger btn-block">Retry</button>
+      </div>
+      
+      <!-- Khu vực chính giữa: Puzzle Board -->
+      <div class="col-md-7 d-flex justify-content-center">
+        <div id="puzzleBoard"></div>
+      </div>
+      
+      <!-- Cột bên phải: chứa thanh slider với các mảnh ghép -->
+      <div class="col-md-3">
+        <div id="pieceSlider"></div>
+      </div>      
+    </div>
+  </div>
+  
+  <!-- ===== Thư viện JavaScript cần thiết ===== -->
+  <!-- jQuery: thư viện JavaScript hỗ trợ thao tác DOM -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <!-- jQuery UI: hỗ trợ tính năng kéo thả -->
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  
+  <!-- ===== Mã JavaScript cho Puzzle ===== -->
+  <script>
+    /***************************************
+     * CÁC BIẾN TOÀN CỤC
+     ***************************************/
+    let currentImage = "";       // Lưu đường dẫn ảnh hiện tại
+    let currentPieces = [];      // Mảng chứa các mảnh puzzle (đối tượng jQuery)
+    const gridSize = 3;          // Puzzle 3x3: 3 hàng x 3 cột
+    
+    // Danh sách ảnh puzzle (cập nhật đường dẫn thật nếu có)
+    const imageArray = [
+      'img/member1/img1.jpg',
+      'img/member1/img2.jpg',
+      'img/member1/img3.jpg',
+      'img/member2/img1.jpg',
+      'img/member2/img2.jpg',
+      'img/member2/img3.jpg',
+      'img/member3/img1.jpg',
+      'img/member3/img2.jpg',
+      'img/member3/img3.jpg',
+      'img/member4/img1.jpg',
+      'img/member4/img2.jpg',
+      'img/member4/img3.jpg',
+      'img/member5/img1.jpg',
+      'img/member5/img2.jpg',
+      'img/member5/img3.jpg',
+      'img/member6/img1.jpg',
+      'img/member6/img2.jpg',
+      'img/member6/img3.jpg',
+    ];
+    
+    /***************************************
+     * HÀM TẠO PUZZLE TỪ ẢNH ĐƯỢC CHỌN
+     ***************************************/
+    function createPuzzle(imageUrl) {
+      currentImage = imageUrl; // Lưu ảnh hiện tại
+      // Xóa nội dung cũ trên puzzle board và slider
+      $('#puzzleBoard').empty();
+      $('#pieceSlider').empty();
+      currentPieces = [];
+      
+      // Lấy kích thước của puzzle board
+      const boardWidth = $('#puzzleBoard').width();
+      const boardHeight = $('#puzzleBoard').height();
+      const pieceWidth = boardWidth / gridSize;
+      const pieceHeight = boardHeight / gridSize;
+      
+      // Tạo các mảnh puzzle theo số hàng và cột
+      for (let row = 0; row < gridSize; row++) {
+        for (let col = 0; col < gridSize; col++) {
+          // Tạo div cho mỗi mảnh puzzle
+          const piece = $('<div></div>').addClass('puzzle-piece').css({
+            width: pieceWidth + 'px',
+            height: pieceHeight + 'px',
+            position: 'absolute',
+            top: (row * pieceHeight) + 'px',
+            left: (col * pieceWidth) + 'px',
+            /* 
+              Thiết lập background cho mảnh:
+              - backgroundImage: Sử dụng ảnh puzzle hiện tại.
+              - backgroundSize: Kích thước của toàn bộ board.
+              - backgroundPosition: Dịch chuyển để hiển thị phần đúng của mảnh.
+            */
+            backgroundImage: 'url(' + imageUrl + ')',
+            backgroundSize: boardWidth + 'px ' + boardHeight + 'px',
+            backgroundPosition: '-' + (col * pieceWidth) + 'px -' + (row * pieceHeight) + 'px'
+          }).attr('data-row', row).attr('data-col', col);
+          
+          // Ban đầu các mảnh ẩn trên board; người chơi sẽ kéo từ slider
+          piece.hide();
+          $('#puzzleBoard').append(piece);
+          currentPieces.push(piece);
+        }
+      }
+      
+      // Tạo bản sao của các mảnh (xáo trộn) để đưa vào thanh slider
+      let piecesCopy = currentPieces.slice();
+      piecesCopy = shuffleArray(piecesCopy);
+      piecesCopy.forEach(function(piece) {
+        // Clone mảnh để đưa vào slider, loại bỏ các thuộc tính định vị
+        let sliderPiece = piece.clone().css({
+          position: 'relative',
+          top: 'auto',
+          left: 'auto',
+          display: 'block',      // Hiển thị theo khối, sắp xếp dọc
+          marginBottom: '5px'     // Khoảng cách giữa các mảnh
+        });
+        // Cho phép kéo (draggable) mảnh từ slider
+        sliderPiece.draggable({
+          revert: "invalid", // Nếu thả không đúng vị trí, mảnh quay lại vị trí ban đầu
+          helper: "clone"    // Tạo bản sao khi kéo, giữ nguyên mảnh gốc trong slider
+        });
+        // Lưu lại thuộc tính data cho việc xác định vị trí đúng
+        sliderPiece.attr('data-row', piece.attr('data-row'));
+        sliderPiece.attr('data-col', piece.attr('data-col'));
+        $('#pieceSlider').append(sliderPiece);
+      });
+      
+      // Thiết lập vùng Puzzle Board là nơi thả (droppable) các mảnh puzzle
+      $('#puzzleBoard').droppable({
+        accept: ".puzzle-piece",
+        drop: function(event, ui) {
+          // Lấy thông tin của mảnh được thả
+          const droppedPiece = ui.draggable;
+          // Tính vị trí thả trên board so với vị trí board
+          let offset = $(this).offset();
+          let dropX = ui.offset.left - offset.left;
+          let dropY = ui.offset.top - offset.top;
+          // Xác định vị trí hàng và cột dựa trên kích thước mảnh
+          const targetCol = Math.floor(dropX / pieceWidth);
+          const targetRow = Math.floor(dropY / pieceHeight);
+          
+          // Tìm mảnh đúng trong currentPieces có thuộc tính data tương ứng
+          let correctPiece = currentPieces.find(p => {
+            return $(p).attr('data-row') == targetRow && $(p).attr('data-col') == targetCol;
+          });
+          
+          // Nếu mảnh được thả đúng vị trí
+          if (droppedPiece.attr('data-row') == targetRow && droppedPiece.attr('data-col') == targetCol) {
+            // Hiển thị mảnh đúng trên board
+            correctPiece.show();
+            // Loại bỏ mảnh khỏi slider
+            ui.draggable.remove();
+          } else {
+            alert("Không đúng vị trí, hãy thử lại!");
+          }
+        }
+      });
+    }
+    
+    /***************************************
+     * HÀM XÁO TRỘN MẢNG (SHUFFLE)
+     ***************************************/
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+    
+    /***************************************
+     * SỰ KIỆN CHO CÁC NÚT
+     ***************************************/
+    // Nút "Pick One": chọn ngẫu nhiên một ảnh từ danh sách và tạo puzzle mới
+    $('#pickOneBtn').click(function() {
+      let randomIndex = Math.floor(Math.random() * imageArray.length);
+      let selectedImage = imageArray[randomIndex];
+      createPuzzle(selectedImage);
+    });
+    
+    // Nút "Help": tìm mảnh chưa được ghép và hiển thị nó trên board
+    $('#helpBtn').click(function() {
+      let missingPiece = currentPieces.find(piece => $(piece).is(':hidden'));
+      if (missingPiece) {
+        missingPiece.show();
+        // Loại bỏ mảnh tương ứng khỏi slider
+        $('#pieceSlider').find('[data-row="' + missingPiece.attr('data-row') + '"][data-col="' + missingPiece.attr('data-col') + '"]').remove();
+      }
+    });
+    
+    // Nút "Retry": Reset lại puzzle hiện tại, ẩn hết các mảnh đã ghép và đưa lại mảnh vào slider
+    $('#retryBtn').click(function() {
+      currentPieces.forEach(function(piece) {
+        $(piece).hide();
+      });
+      $('#pieceSlider').empty();
+      let piecesCopy = currentPieces.slice();
+      piecesCopy = shuffleArray(piecesCopy);
+      piecesCopy.forEach(function(piece) {
+        let sliderPiece = piece.clone().css({
+          position: 'relative',
+          top: 'auto',
+          left: 'auto',
+          display: 'block',
+          marginBottom: '5px'
+        });
+        sliderPiece.draggable({
+          revert: "invalid",
+          helper: "clone"
+        });
+        sliderPiece.attr('data-row', piece.attr('data-row'));
+        sliderPiece.attr('data-col', piece.attr('data-col'));
+        $('#pieceSlider').append(sliderPiece);
+      });
+    });
+    
+    // Khi trang tải xong, tự động kích hoạt nút "Pick One" để bắt đầu puzzle mới
+    $(document).ready(function() {
+      $('#pickOneBtn').click();
+    });
+  </script>
+</body>
+</html>

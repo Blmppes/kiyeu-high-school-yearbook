@@ -1,0 +1,97 @@
+/* ========================
+   Phần Hero Section với Background Slider
+   ======================== */
+   .hero {
+    position: relative;      /* Cho phép các phần tử con (slide, overlay, hero-content) định vị tuyệt đối bên trong */
+    height: 100vh;           /* Chiều cao của hero bằng 100% chiều cao cửa sổ trình duyệt */
+    overflow: hidden;        /* Ẩn các phần tử vượt ra ngoài khối hero */
+  }
+  
+  /* Khối chứa các slide background */
+  .bg-slider {
+    position: absolute;      /* Đặt khối này ở vị trí tuyệt đối trong .hero */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;              /* Để các slide nằm sau lớp overlay và nội dung chính */
+  }
+  
+  /* Mỗi slide (ảnh background) */
+  .slide {
+    position: absolute;      /* Đặt các slide chồng lên nhau */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;  /* Ảnh sẽ bao phủ toàn bộ khối mà không bị méo */
+    background-position: center; /* Căn giữa ảnh */
+    opacity: 0;              /* Ban đầu, slide không hiển thị (mờ hoàn toàn) */
+    animation: fade 18s infinite; /* Áp dụng hiệu ứng mờ dần (fade) với chu kỳ 15 giây, lặp lại vô hạn */
+  }
+  
+  /* Định nghĩa ảnh cho từng slide và đặt thời gian trễ (delay) khác nhau để tạo hiệu ứng chuyển dần */
+  .slide1 {
+    background-image: url('../img/class_photo.jpg');  /* Đường dẫn đến ảnh thứ nhất */
+    animation-delay: 0s;    /* Slide này bắt đầu ngay */
+  }
+  .slide2 {
+    background-image: url('../img/member1/img2.jpg');  /* Đường dẫn đến ảnh thứ hai */
+    animation-delay: 3s;    /* Bắt đầu sau 5 giây */
+  }
+  .slide3 {
+    background-image: url('../img/member2/img2.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    animation-delay: 6s;   /* Bắt đầu sau 10 giây */
+  }
+  .slide4 {
+    background-image: url('../img/member3/img3.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    animation-delay: 9s;   /* Bắt đầu sau 10 giây */
+  }
+  .slide5 {
+    background-image: url('../img/member4/img2.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    animation-delay: 12s;   /* Bắt đầu sau 10 giây */
+  }
+  .slide6 {
+    background-image: url('../img/member5/img2.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    animation-delay: 15s;   /* Bắt đầu sau 10 giây */
+  }
+  .slide7 {
+    background-image: url('../img/member6/img3.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    animation-delay: 18s;   /* Bắt đầu sau 10 giây */
+  }
+  
+  /* Keyframes định nghĩa hiệu ứng chuyển đổi (fade) cho các slide */
+  @keyframes fade {
+    0% {
+      opacity: 0;         /* Ban đầu, slide hoàn toàn mờ */
+    }
+    10% {
+      opacity: 1;         /* Sau 10% chu kỳ, slide hiển thị đầy đủ */
+    }
+    33% {
+      opacity: 1;         /* Giữ hiển thị đầy đủ đến 33% chu kỳ */
+    }
+    43% {
+      opacity: 0;         /* Sau đó, slide dần mờ đi */
+    }
+    100% {
+      opacity: 0;         /* Kết thúc chu kỳ, slide không hiển thị */
+    }
+  }
+  
+  /* Giữ các định dạng cũ cho lớp overlay và hero-content */
+  .hero .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Lớp mờ 50% */
+  }
+  
+  .hero .hero-content {
+    position: relative;
+    text-align: center;
+    z-index: 1;           /* Đảm bảo nội dung nằm trên các slide */
+  }
+  
