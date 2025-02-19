@@ -40,7 +40,7 @@
     animation-delay: 3s;    /* Bắt đầu sau 5 giây */
   }
   .slide3 {
-    background-image: url('../img/member2/img2.jpg');  /* Đường dẫn đến ảnh thứ ba */
+    background-image: url('../img/member2/img5.jpg');  /* Đường dẫn đến ảnh thứ ba */
     animation-delay: 6s;   /* Bắt đầu sau 10 giây */
   }
   .slide4 {
